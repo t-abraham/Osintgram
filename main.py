@@ -7,15 +7,6 @@ from src import artwork
 import sys
 import signal
 
-is_windows = False
-
-try:
-    import gnureadline  
-except: 
-    is_windows = True
-    import pyreadline
-
-
 def printlogo():
     pc.printout(artwork.ascii_art, pc.YELLOW)
     pc.printout("\nVersion 1.1 - Developed by Giuseppe Criscione\n\n", pc.YELLOW)
@@ -86,6 +77,7 @@ def signal_handler(sig, frame):
 
 
 def completer(text, state):
+    global commands
     options = [i for i in commands if i.startswith(text)]
     if state < len(options):
         return options[state]
@@ -96,106 +88,140 @@ def _quit():
     pc.printout("Goodbye!\n", pc.RED)
     sys.exit(0)
 
+def api_process(args, is_windows):
+    global commands
+    
+    api = Osintgram(args.id, args.file, args.json, args.command, args.output, args.cookies)
 
-signal.signal(signal.SIGINT, signal_handler)
-if is_windows:
-    pyreadline.Readline().parse_and_bind("tab: complete")
-    pyreadline.Readline().set_completer(completer)
-else:
-    gnureadline.parse_and_bind("tab: complete")
-    gnureadline.set_completer(completer)
-
-parser = argparse.ArgumentParser(description='Osintgram is a OSINT tool on Instagram. It offers an interactive shell '
-                                             'to perform analysis on Instagram account of any users by its nickname ')
-parser.add_argument('id', type=str,  # var = id
-                    help='username')
-parser.add_argument('-C','--cookies', help='clear\'s previous cookies', action="store_true")
-parser.add_argument('-j', '--json', help='save commands output as JSON file', action='store_true')
-parser.add_argument('-f', '--file', help='save output in a file', action='store_true')
-parser.add_argument('-c', '--command', help='run in single command mode & execute provided command', action='store')
-parser.add_argument('-o', '--output', help='where to store photos', action='store')
-
-args = parser.parse_args()
-
-
-api = Osintgram(args.id, args.file, args.json, args.command, args.output, args.cookies)
-
-
-
-commands = {
-    'list':             cmdlist,
-    'help':             cmdlist,
-    'quit':             _quit,
-    'exit':             _quit,
-    'addrs':            api.get_addrs,
-    'cache':            api.clear_cache,
-    'captions':         api.get_captions,
-    "commentdata":      api.get_comment_data,
-    'comments':         api.get_total_comments,
-    'followers':        api.get_followers,
-    'followings':       api.get_followings,
-    'fwersemail':       api.get_fwersemail,
-    'fwingsemail':      api.get_fwingsemail,
-    'fwersnumber':      api.get_fwersnumber,
-    'fwingsnumber':     api.get_fwingsnumber,
-    'hashtags':         api.get_hashtags,
-    'info':             api.get_user_info,
-    'likes':            api.get_total_likes,
-    'mediatype':        api.get_media_type,
-    'photodes':         api.get_photo_description,
-    'photos':           api.get_user_photo,
-    'propic':           api.get_user_propic,
-    'stories':          api.get_user_stories,
-    'tagged':           api.get_people_tagged_by_user,
-    'target':           api.change_target,
-    'wcommented':       api.get_people_who_commented,
-    'wtagged':          api.get_people_who_tagged
-}
+    commands = {
+        'list':             cmdlist,
+        'help':             cmdlist,
+        'quit':             _quit,
+        'exit':             _quit,
+        'addrs':            api.get_addrs,
+        'cache':            api.clear_cache,
+        'captions':         api.get_captions,
+        "commentdata":      api.get_comment_data,
+        'comments':         api.get_total_comments,
+        'followers':        api.get_followers,
+        'followings':       api.get_followings,
+        'fwersemail':       api.get_fwersemail,
+        'fwingsemail':      api.get_fwingsemail,
+        'fwersnumber':      api.get_fwersnumber,
+        'fwingsnumber':     api.get_fwingsnumber,
+        'hashtags':         api.get_hashtags,
+        'info':             api.get_user_info,
+        'likes':            api.get_total_likes,
+        'mediatype':        api.get_media_type,
+        'photodes':         api.get_photo_description,
+        'photos':           api.get_user_photo,
+        'propic':           api.get_user_propic,
+        'stories':          api.get_user_stories,
+        'tagged':           api.get_people_tagged_by_user,
+        'target':           api.change_target,
+        'wcommented':       api.get_people_who_commented,
+        'wtagged':          api.get_people_who_tagged
+    }
 
 
-signal.signal(signal.SIGINT, signal_handler)
-if is_windows:
-    pyreadline.Readline().parse_and_bind("tab: complete")
-    pyreadline.Readline().set_completer(completer)
-else:
-    gnureadline.parse_and_bind("tab: complete")
-    gnureadline.set_completer(completer)
-
-if not args.command:
-    printlogo()
-
-
-while True:
-    if args.command:
-        cmd = args.command
-        _cmd = commands.get(args.command)
+    signal.signal(signal.SIGINT, signal_handler)
+    if is_windows:
+        pyreadline.Readline().parse_and_bind("tab: complete")
+        pyreadline.Readline().set_completer(completer)
     else:
-        signal.signal(signal.SIGINT, signal_handler)
-        if is_windows:
-            pyreadline.Readline().parse_and_bind("tab: complete")
-            pyreadline.Readline().set_completer(completer)
+        gnureadline.parse_and_bind("tab: complete")
+        gnureadline.set_completer(completer)
+
+    if not args.command:
+        printlogo()
+
+
+    while True:
+        if args.command:
+            cmd = args.command
+            _cmd = commands.get(args.command)
         else:
-            gnureadline.parse_and_bind("tab: complete")
-            gnureadline.set_completer(completer)
-        pc.printout("Run a command: ", pc.YELLOW)
-        cmd = input()
+            signal.signal(signal.SIGINT, signal_handler)
+            if is_windows:
+                pyreadline.Readline().parse_and_bind("tab: complete")
+                pyreadline.Readline().set_completer(completer)
+            else:
+                gnureadline.parse_and_bind("tab: complete")
+                gnureadline.set_completer(completer)
+            pc.printout("Run a command: ", pc.YELLOW)
+            cmd = input()
 
-        _cmd = commands.get(cmd)
+            _cmd = commands.get(cmd)
 
-    if _cmd:
-        _cmd()
-    elif cmd == "FILE=y":
-        api.set_write_file(True)
-    elif cmd == "FILE=n":
-        api.set_write_file(False)
-    elif cmd == "JSON=y":
-        api.set_json_dump(True)
-    elif cmd == "JSON=n":
-        api.set_json_dump(False)
-    elif cmd == "":
-        print("")
+        if _cmd:
+            _cmd()
+        elif cmd == "FILE=y":
+            api.set_write_file(True)
+        elif cmd == "FILE=n":
+            api.set_write_file(False)
+        elif cmd == "JSON=y":
+            api.set_json_dump(True)
+        elif cmd == "JSON=n":
+            api.set_json_dump(False)
+        elif cmd == "":
+            print("")
+        else:
+            pc.printout("Unknown command\n", pc.RED)
+
+        if args.command:
+            break
+
+if __name__ == "__main__":       
+ 
+    is_windows = False
+    
+    try:
+        import gnureadline  
+    except: 
+        is_windows = True
+        import pyreadline
+        
+    signal.signal(signal.SIGINT, signal_handler)
+    if is_windows:
+        pyreadline.Readline().parse_and_bind("tab: complete")
+        pyreadline.Readline().set_completer(completer)
     else:
-        pc.printout("Unknown command\n", pc.RED)
-
-    if args.command:
-        break
+        gnureadline.parse_and_bind("tab: complete")
+        gnureadline.set_completer(completer)
+    
+    parser = argparse.ArgumentParser(description='Osintgram is a OSINT tool on Instagram. It offers an interactive shell '
+                                                 'to perform analysis on Instagram account of any users by its nickname ')
+    parser.add_argument('id', type=str, nargs='?', help='username')
+    parser.add_argument('-C','--cookies', help='clear\'s previous cookies', action="store_true")
+    parser.add_argument('-j', '--json', help='save commands output as JSON file', action='store_true')
+    parser.add_argument('-f', '--file', help='save output in a file', action='store_true')
+    parser.add_argument('-c', '--command', help='run in single command mode & execute provided command', action='store')
+    parser.add_argument('-o', '--output', help='where to store photos', action='store')
+    parser.add_argument('-m', '--multi', help='multi targets', action='store_true')
+    
+    args = parser.parse_args()
+    
+    if args.multi:
+        if args.command:
+            try:
+                data = [line.strip() for line in open("config/targets.ini", 'r')]
+            except FileNotFoundError:
+                pc.printout('Error: file "config/targets.ini" not found!\n', pc.RED)
+                sys.exit(0)
+            except Exception as e:
+                pc.printout("Error: {}\n".format(e), pc.RED)
+                sys.exit(0)
+                
+            for target in data:
+                pc.printout("*************************************************************************\n", pc.GREEN)            
+                pc.printout("Target: {}\n".format(target), pc.GREEN)            
+                pc.printout("*************************************************************************\n", pc.GREEN)
+                args.id = target
+                api_process(args, is_windows)
+                pc.printout("All targets completed!\n", pc.RED)    
+                pc.printout("Goodbye!\n", pc.RED)
+        else:
+            pc.printout('Error: To use Multi Target (-m), a fixed Command (-c) needs to be passed too!\n', pc.RED)
+            sys.exit(0)
+    else:
+        api_process(args, is_windows)
