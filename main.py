@@ -218,8 +218,8 @@ if __name__ == "__main__":
                 pc.printout("*************************************************************************\n", pc.GREEN)
                 args.id = target
                 api_process(args, is_windows)
-                pc.printout("All targets completed!\n", pc.RED)    
-                pc.printout("Goodbye!\n", pc.RED)
+            pc.printout("All targets completed!\n", pc.RED)    
+            pc.printout("Goodbye!\n", pc.RED)
         else:
             pc.printout('Error: To use Multi Target (-m), a fixed Command (-c) needs to be passed too!\n', pc.RED)
             sys.exit(0)
