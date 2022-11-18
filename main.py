@@ -204,7 +204,8 @@ if __name__ == "__main__":
     if args.multi:
         if args.command:
             try:
-                data = [line.strip() for line in open("config/targets.ini", 'r')]
+                data = [line.strip() for line in open("config/targets.ini", 'r') if not line.strip()[0] == "#"]
+                data = list(set(data))
             except FileNotFoundError:
                 pc.printout('Error: file "config/targets.ini" not found!\n', pc.RED)
                 sys.exit(0)
