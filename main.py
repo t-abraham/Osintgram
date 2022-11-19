@@ -6,6 +6,7 @@ from src import printcolors as pc
 from src import artwork
 import sys
 import signal
+import os
 
 def printlogo():
     pc.printout(artwork.ascii_art, pc.YELLOW)
@@ -88,8 +89,14 @@ def _quit():
     pc.printout("Goodbye!\n", pc.RED)
     sys.exit(0)
 
-def api_process(args, is_windows):
+def api_process(args):
     global commands
+    
+    if os.name == 'nt':
+        import pyreadline3 as pyreadline
+        readliner = pyreadline.Readline()
+    else:
+        import gnureadline as readliner
     
     api = Osintgram(args.id, args.file, args.json, args.command, args.output, args.cookies)
 
@@ -125,12 +132,11 @@ def api_process(args, is_windows):
 
 
     signal.signal(signal.SIGINT, signal_handler)
-    if is_windows:
-        pyreadline.Readline().parse_and_bind("tab: complete")
-        pyreadline.Readline().set_completer(completer)
-    else:
-        gnureadline.parse_and_bind("tab: complete")
-        gnureadline.set_completer(completer)
+    print (0)
+    readliner.parse_and_bind("tab: complete")
+    readliner.set_completer(completer)
+    print (1)
+    
 
     if not args.command:
         printlogo()
@@ -142,12 +148,8 @@ def api_process(args, is_windows):
             _cmd = commands.get(args.command)
         else:
             signal.signal(signal.SIGINT, signal_handler)
-            if is_windows:
-                pyreadline.Readline().parse_and_bind("tab: complete")
-                pyreadline.Readline().set_completer(completer)
-            else:
-                gnureadline.parse_and_bind("tab: complete")
-                gnureadline.set_completer(completer)
+            readliner.parse_and_bind("tab: complete")
+            readliner.set_completer(completer)
             pc.printout("Run a command: ", pc.YELLOW)
             cmd = input()
 
@@ -173,21 +175,6 @@ def api_process(args, is_windows):
 
 if __name__ == "__main__":       
  
-    is_windows = False
-    
-    try:
-        import gnureadline  
-    except: 
-        is_windows = True
-        import pyreadline
-        
-    signal.signal(signal.SIGINT, signal_handler)
-    if is_windows:
-        pyreadline.Readline().parse_and_bind("tab: complete")
-        pyreadline.Readline().set_completer(completer)
-    else:
-        gnureadline.parse_and_bind("tab: complete")
-        gnureadline.set_completer(completer)
     
     parser = argparse.ArgumentParser(description='Osintgram is a OSINT tool on Instagram. It offers an interactive shell '
                                                  'to perform analysis on Instagram account of any users by its nickname ')
@@ -218,11 +205,11 @@ if __name__ == "__main__":
                 pc.printout("Target: {}\n".format(target), pc.GREEN)            
                 pc.printout("*************************************************************************\n", pc.GREEN)
                 args.id = target
-                api_process(args, is_windows)
+                api_process(args)
             pc.printout("All targets completed!\n", pc.RED)    
             pc.printout("Goodbye!\n", pc.RED)
         else:
             pc.printout('Error: To use Multi Target (-m), a fixed Command (-c) needs to be passed too!\n', pc.RED)
             sys.exit(0)
     else:
-        api_process(args, is_windows)
+        api_process(args)
