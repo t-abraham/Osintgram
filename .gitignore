@@ -1,8 +1,8 @@
-__pycache__/
+**/__pycache__/
 output/
 **/*.pyc
 **/*.json
 venv/
-credentials.ini
-settings.json
-targets.ini
+**/credentials.ini
+**/settings.json
+**/targets.ini
